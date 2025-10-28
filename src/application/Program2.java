@@ -13,9 +13,11 @@ public class Program2 {
     DepartmentDao departmentDao = DaoFactory.createDepartmentDao();
 
     System.out.println("=== TEST 1: department findAll ===");
-    List<Department> department = departmentDao.findAll();
-    department.forEach(System.out::println);
+    List<Department> list = departmentDao.findAll();
+    list.forEach(System.out::println);
 
-
+    System.out.println("\n=== TEST 2: department findById ===");
+    Department department = departmentDao.findById(2);
+    System.out.println(department);
   }
 }

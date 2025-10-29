@@ -55,12 +55,45 @@ public class DepartmentDaoJDBC implements DepartmentDao {
       }catch (SQLException e1){
         throw new DbException("Error trying to rollback! Caused by: " + e1.getMessage());
       }
+    }finally {
+      DB.closeStatement(st);
     }
   }
 
   @Override
   public void update(Department obj) {
+    PreparedStatement st = null;
 
+    try {
+      conn.setAutoCommit(false);
+
+      if (obj.getName().isEmpty()){
+        throw new DbException("The field Name is empty!");
+      }
+
+      st = conn.prepareStatement(
+          "UPDATE department " +
+              "SET Name = ? "
+              + "WHERE Id = ?;"
+      );
+
+      st.setString(1, obj.getName());
+      st.setInt(2, obj.getId());
+
+      int row = st.executeUpdate();
+
+      conn.commit();
+      System.out.println("Done! Row affected: " + row);
+    }catch (SQLException e) {
+      try{
+        conn.rollback();
+        throw new DbException("Transaction rolled back! Caused by: " + e.getMessage());
+      }catch (SQLException e1){
+        throw new DbException("Error trying to rollback! Caused by: " + e1.getMessage());
+      }
+    }finally {
+      DB.closeStatement(st);
+    }
   }
 
   @Override

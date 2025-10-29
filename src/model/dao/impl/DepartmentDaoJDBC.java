@@ -2,6 +2,7 @@ package model.dao.impl;
 
 import config.DB;
 import config.DbException;
+import config.DbIntegrityException;
 import model.dao.DepartmentDao;
 import model.entities.Department;
 
@@ -98,7 +99,36 @@ public class DepartmentDaoJDBC implements DepartmentDao {
 
   @Override
   public void deleteById(Integer id) {
+    PreparedStatement st = null;
 
+    try {
+      conn.setAutoCommit(false);
+
+      st = conn.prepareStatement(
+          "DELETE FROM department "
+              + "WHERE Id = ?;"
+      );
+
+      st.setInt(1, id);
+
+      int row = st.executeUpdate();
+
+      if(row == 0){
+        throw new DbException("Id is not exist!");
+      }
+
+      conn.commit();
+      System.out.println("Done! Row affected: " + row);
+    }catch (SQLException e) {
+      try{
+        conn.rollback();
+        throw new DbIntegrityException("Transaction rolled back! Caused by: " + e.getMessage());
+      }catch (SQLException e1){
+        throw new DbException("Error trying to rollback! Caused by: " + e1.getMessage());
+      }
+    }finally {
+      DB.closeStatement(st);
+    }
   }
 
   @Override
